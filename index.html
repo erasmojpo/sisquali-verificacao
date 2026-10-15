@@ -103,8 +103,9 @@ footer{color:var(--muted);font-size:13px;text-align:center}
     </div>
     <input type="file" id="arq" accept="application/pdf,image/*" hidden>
     <div class="or">ou</div>
-    <label class="lb" for="cod">Cole o código de verificação do QR Code</label>
-    <textarea id="cod" spellcheck="false" placeholder="Cole aqui o conteúdo lido do QR Code (começa pelo endereço desta página)"></textarea>
+    <label class="lb" for="cod">Cole o link completo lido do QR Code</label>
+    <textarea id="cod" spellcheck="false" placeholder="https://erasmojpo.github.io/sisquali-verificacao/#…"></textarea>
+    <p class="hint" style="margin-top:6px">Use este campo se o seu leitor de QR Code mostrou o texto em vez de abrir o link. O código curto impresso no documento (SQ-AAAA-XXXX-XXXX) sozinho não permite a verificação.</p>
     <div class="row"><button type="button" class="btn" id="ver">Verificar</button><p class="hint" id="msg" aria-live="polite"></p></div>
   </section>
 
@@ -145,6 +146,8 @@ function quando(iso){ try{ const d=new Date(iso); if(isNaN(d)) return iso; retur
 function mostra(cls,icon,titulo,texto,extra){ $("#out").innerHTML=`<div class="res ${cls}"><div class="st"><span class="ic">${icon}</span><div><h2>${esc(titulo)}</h2><p>${texto}</p></div></div>${extra||""}</div>`; $("#out").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"}); }
 async function verificaToken(tok,origem){
   const m=String(tok||"").match(TOKEN_RE);
+  const curto=String(tok||"").trim().toUpperCase().match(/^SQ-\d{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+  if(!m&&curto){ mostra("warn",ICON_WARN,"Use o QR Code ou o PDF",`O código <span class="mono">${esc(curto[0])}</span> identifica o documento, mas sozinho não permite conferir a assinatura. Para verificar: aponte a câmera do celular para o QR Code impresso no documento, envie o arquivo PDF acima ou envie uma foto do QR Code.`); return; }
   if(!m){ mostra("warn",ICON_WARN,"Selo não encontrado",origem==="pdf"?"Este PDF não traz o selo do SisQuali. Se ele foi impresso e digitalizado ou salvo por outro programa, os dados do selo se perdem: envie uma foto do QR Code impresso no rodapé.":"Não foi possível ler um código de verificação. Use o conteúdo completo do QR Code, que começa pelo endereço desta página."); return; }
   const [ ,p,sg]=m; let info;
   try{ info=JSON.parse(new TextDecoder().decode(b64uBytes(p))); }catch(_){ info=null; }
